@@ -3,15 +3,15 @@
 Ordnerstruktur
 
 classes
-  - user.php
+  user.php
   ...
 modules
-  - config.php
+  config.php
 sites
-  - uselogin.php
+  uselogin.php
   ...
 src
-  - assets
-  - css
-    - navbar.css
-    - styles.css
+  assets
+  css
+    navbar.css
+    styles.css
