@@ -18,3 +18,6 @@ src
 - css  
  -- navbar.css  
  -- styles.css
+
+
+Datenbankverbindung Testen: https://www.tutorialrepublic.com/php-tutorial/php-mysql-connect.php
