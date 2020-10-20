@@ -21,5 +21,5 @@ src
 
 
 Datenbankverbindung Testen: https://www.tutorialrepublic.com/php-tutorial/php-mysql-connect.php  
-Mysqli Prepared Statements: https://phpdelusions.net/mysqli_examples/prepared_select
+Mysqli Prepared Statements: https://phpdelusions.net/mysqli_examples/prepared_select  
 Login https://www.tutorialrepublic.com/php-tutorial/php-mysql-login-system.php
