@@ -20,7 +20,7 @@ class Database {
     public function getDatabase() {
         return $this->mysqli;
     }
-
+/*
 // Gets an user by the email
     public function getUser($email) {
         // Prepare db-statements
@@ -47,7 +47,40 @@ class Database {
         }
         // Returns the created user
         return $user;
+    }*/
+    
+    public function getUser($email) {
+        // Prepare db-statements
+        $sql = "SELECT * FROM t_user WHERE email =?";
+        $stmt= $this->mysqli->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+
+        $sqlResult = $stmt->get_result()->fetch_assoc(); 
+        // Creates the user from the returned row if one is returned
+        if (is_countable($sqlResult) && count($sqlResult) > 0) {
+            // Creates an new user
+            $user = new User();
+            $user->userId = $sqlResult['user_id'];
+            $user->courseId = $sqlResult['course_id'];
+            $user->email = $sqlResult['email'];
+            $user->password = $sqlResult['password'];
+            $user->firstname = $sqlResult['firstname'];
+            $user->lastname = $sqlResult['lastname'];
+            $user->postalCode = $sqlResult['postal_code'];
+            $user->city = $sqlResult['city'];
+            $user->street = $sqlResult['street'];
+        } else{
+            return false;
+        }
+        // Returns the created user
+        return $user;
     }
+
+
+
+
+
 
     // Gets an user by the email
     public function getInternalUser($email) {
@@ -96,7 +129,7 @@ class Database {
         return $course;
 
     }
-
+    
     public function getAllCourses() {
 
         $statement = "SELECT * FROM t_course;";
@@ -120,6 +153,37 @@ class Database {
 
     }
 
+/*
+    public function getAllCourses() {
+
+        $sql = "SELECT * FROM t_course";
+        $stmt= $this->mysqli->prepare($sql);
+        $stmt->execute();
+
+        $sqlResult = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        $courses = array();
+
+        foreach ($sqlResult as $SqlCourse) {
+            $course = new Course();
+            $course->courseId = $SqlCourse['course_id'];
+            $course->name = $SqlCourse['name'];
+            $course->internalUserId = $SqlCourse['internal_user_id'];
+            array_push($courses, $course);
+        }
+
+        // Returns the course
+        return $courses;
+
+
+    }
+
+*/
+
+
+
+
+/*
     public function getAllInternalUsers() {
 
         $statement = "SELECT * FROM t_internal_user;";
@@ -127,6 +191,34 @@ class Database {
         $result = mysqli_query($this->mysqli, $statement);
         // Creates an associative array from the result
         $sqlResult = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        // Creates the course from the returned row if one is returned
+        $internalUsers = array();
+
+        foreach ($sqlResult as $SqlInternalUser) {
+            $internalUser = new InternalUser();
+            $internalUser->internalUserId = $SqlInternalUser['internal_user_id'];
+            $internalUser->isAdministrator = $SqlInternalUser['is_administrator'];
+            $internalUser->email = $SqlInternalUser['email'];
+            $internalUser->password = $SqlInternalUser['password'];
+            $internalUser->firstname = $SqlInternalUser['firstname'];
+            $internalUser->lastname = $SqlInternalUser['lastname'];
+            $internalUser->postalCode = $SqlInternalUser['postal_code'];
+            $internalUser->city = $SqlInternalUser['city'];
+            $internalUser->street = $SqlInternalUser['street'];
+            array_push($internalUsers, $internalUser);
+        }
+
+        // Returns the course
+        return $internalUsers;
+
+    }*/
+
+    public function getAllInternalUsers() {
+
+        $sql = "SELECT * FROM t_internal_user;";
+        $stmt= $this->mysqli->prepare($sql);
+        $stmt->execute();
+        $sqlResult = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         // Creates the course from the returned row if one is returned
         $internalUsers = array();
 
