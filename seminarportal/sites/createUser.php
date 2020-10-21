@@ -5,6 +5,7 @@ require_once('../classes/user.php');
 
 // creates a new empty user Object
 $user = new User();
+$usercreation_error = '';
 /*
 unsearialies the previous serialised user 
 and saves it as the newly created user
@@ -107,7 +108,7 @@ $courses = $database->getAllCourses();
 
 	<!-- Div that centers the displayed register form -->
     <div style=" display: block;margin-left: auto;margin-right: auto;width: max-content;">
-        <form action="?register=1" method="post">
+        <form name="register" action="?register=1" method="post">
             E-Mail:<br>
             <input type="email" size="40" maxlength="250" name="email"><br><br>
             Dein Password:<br>
@@ -119,7 +120,7 @@ $courses = $database->getAllCourses();
             Nachname:<br>
             <input type="text" size="40" maxlength="250" name="lastname"><br><br>
             Postleitzahl:<br>
-            <input type="text" size="40" maxlength="250" name="postalCode"><br><br>
+            <input type="text" size="40" maxlength="250" name="postalCode" id="postalCode" onfocus="checkzipcode()" onblur="checkzipcode()"><br><br>
             Stadt:<br>
             <input type="text" size="40" maxlength="250" name="city"><br><br>
             Strasse:<br>
@@ -144,6 +145,8 @@ $courses = $database->getAllCourses();
     }
     ?>
 
+    <p id="usercreation-error"><?php echo $usercreation_error;?></p>
+
     </div>
 
 
@@ -156,6 +159,8 @@ $courses = $database->getAllCourses();
 	</footer>
 
 </body>
+
+ <script src="./../js/functions.js"></script> 
 
 
 </html>
