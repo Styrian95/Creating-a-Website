@@ -1,0 +1,50 @@
+config.php
+
+<?php
+
+require_once('../classes/course.php');
+require_once('../classes/database.php');
+require_once('../classes/document.php');
+require_once('../classes/internalUser.php');
+require_once('../classes/user.php');
+
+
+define('DB_HOST', 'localhost');
+define('DB_USER', 'luis1995');
+define('DB_PASSWORD', 'Lukas1995');
+define('DB_NAME', 'seminarportal');
+
+$database = new Database(DB_HOST, DB_NAME, DB_USER, DB_PASSWORD);
+
+
+?>
+
+database.php
+
+class Database {
+    // Private variable that can only be called inside the class and it's child objects
+    private $mysqli;
+    // The constructor gets called when the class gets created
+    public function __construct($host, $dbname, $user, $password) {
+        // Opens the database connection with the variables from the config.php
+        $this->mysqli = new mysqli($host, $user, $password, $dbname);
+        if ($this->mysqli->connect_errno) {
+            echo "Failed to connect to MySQL: " . $this->mysqli->connect_error;
+        }
+    }
+    // Database-Getter
+    public function getDatabase() {
+        return $this->mysqli;
+    }
+
+	$sql = "SELECT * FROM t_internal_user;";
+        $stmt= $this->mysqli->prepare($sql);
+        $stmt->execute();
+        $sqlResult = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        $sql = "SELECT * FROM t_user WHERE email =?";
+        $stmt= $this->mysqli->prepare($sql);
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+
+        $sqlResult = $stmt->get_result()->fetch_assoc(); 
