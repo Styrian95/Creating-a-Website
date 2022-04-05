@@ -1,0 +1,563 @@
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+
+Config
+config.php
+
+<?php
+// Daten für DB eintragen
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', '');
+define('DB_NAME', 'lap');
+ 
+// Verbindung aufbauen
+$link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+ 
+// Verbindung prüfen
+if($link === false){
+    die("ERROR: Verbindung fehlgeschlagen. " . mysqli_connect_error());
+}
+?>
+
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+Style
+style.php
+
+<style>
+		body {font-family: Arial, Helvetica, sans-serif;}
+	
+		input[type=password] {
+			width: 50%;
+			padding: 12px 20px;
+			margin-bottom: 10px;
+			display: inline-block;
+			border: 1px solid #ccc;
+			box-sizing: border-box;
+			border-radius: 20px;
+		}
+		
+		textarea {
+			width: 50%;
+			border-radius: 10px;
+		}
+		
+		input[type=text] {
+			width: 50%;
+			border: 1px solid #ccc;
+			padding: 12px 20px;
+			box-sizing: border-box
+			margin-bottom: 10px;
+			border-radius: 20px;
+		}
+
+		.button {
+			background-color: #d9b3ff;
+			color: white;
+			padding: 14px 20px;
+			margin: 8px 0;
+			border: none;
+			cursor: pointer;
+			width: 50%;
+			border-radius: 20px;
+		}
+	
+		.role {
+			color: #d9b3ff;
+		}
+		
+		.button:hover {
+			opacity: 0.8;
+			box-shadow: 0 2px 2px 1px #d24dff;
+		}
+
+		.container {
+			padding: 16px;
+			margin: auto;
+			border-radius: 20px;
+		}
+		
+		.error {
+			color: red;
+		}
+		
+		.content {
+		max-width: 500px;
+		margin: auto;
+		}
+		
+		.done {
+			color: green;
+			font-size:150%;
+		}
+		
+		
+		table {
+			border:1px solid #d9b3ff;
+			border-radius: 20px;
+			padding: 15px;
+			border-spacing: 20px;
+		}
+
+    </style>
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+FILES
+LOGOUT
+logout.php
+
+<?php
+// Initialize the session
+session_start();
+ 
+// Unset all of the session variables
+$_SESSION = array();
+ 
+// Destroy the session.
+session_destroy();
+ 
+// Redirect to login page
+header("location: home.php");
+exit;
+?>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+LOGIN
+login.php
+
+<?php
+require_once "config.php";
+require_once "style.php";
+require_once "login_backend.php";
+?>
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<head>
+    
+    <title>Login</title>
+    
+</head>
+<body>
+<div class="content">
+    <div class="container">
+        <h2>Login</h2>
+        <p>Melde dich an.</p>
+
+        <?php 
+        if(!empty($login_err)){
+            echo '<div class="error">' . $login_err . '</div>';
+        }        
+        ?>
+
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+            
+			
+                <label>Username</label>
+				<br>
+				<span class="error"><?php echo $username_err; ?></span>
+				<br>
+                <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $name; ?>">
+                
+				<br>
+				<br>
+                <label>Password</label>
+				<br>
+				<span class="error"><?php echo $password_err; ?></span>
+				<br>
+                <input type="password" name="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>">
+                
+            
+				<br>
+                <input type="submit" class="button" value="Login">
+        </form>
+    </div>
+</div>
+</body>
+</html>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+LOGIN BACK
+login_backend.php
+
+<?php
+// Initialize the session
+session_start();
+// Check if the user is already logged in, if yes then redirect him to welcome page
+if(isset($_SESSION["loggedin"]) === true){
+    header("location: nlogin.php");
+    exit;
+}
+// Define variables and initialize with empty values
+$name = $password = "";
+$username_err = $password_err = $login_err = "";
+// Form Verarbeitung
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+    // Name leer ? 
+    if(trim($_POST["username"])== false){
+        $username_err = "Please enter username.";
+    } 
+	else{
+        $name = trim($_POST["username"]);
+    } 
+    // Passwort leer ? 
+    if(trim($_POST["password"])== false){
+        $password_err = "Please enter your password.";
+    } 
+	else{
+        $password_user = trim($_POST["password"]);
+    }
+    // Kontrolle
+        // Select Statement
+        $sql = "SELECT id, name, passwort, rolle FROM t_users WHERE name = ?";
+        if($stmt = mysqli_prepare($link, $sql)){
+			// Name einsetzen
+            $param_username = $name;
+            // Übergabe der Eingabe des Namens
+            mysqli_stmt_bind_param($stmt, "s", $param_username);
+            // Versuch auszuführen
+            if(mysqli_stmt_execute($stmt)){
+                // Speichern
+                mysqli_stmt_store_result($stmt);  
+                // Es gibt eine Zeile? weiter zu Passwort 
+                if(mysqli_stmt_num_rows($stmt) == 1){      
+                    // Speichern des Ausgabe in korrektem Format
+                    mysqli_stmt_bind_result($stmt, $id, $name, $password, $role);
+                    if(mysqli_stmt_fetch($stmt)){
+						// Kontrolle ob der Hash mit der Eingabe übereinstimmt
+                        //if(password_verify($password_user, $password)){
+						  if ($password_user = $password) {
+                            // Password OK - starte neue Session
+                            session_start();
+                            
+                            // Session speichern
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                            $_SESSION["username"] = $name; 
+							$_SESSION["role"] = $role;
+                            
+							// Zusatzdaten aus anderer DB hinzufügen zur Session
+							$sql = "SELECT name FROM t_rolle WHERE id = $role";
+							$stmt = mysqli_prepare($link, $sql);
+							if(mysqli_stmt_execute($stmt)) {
+								
+								mysqli_stmt_store_result($stmt);
+								
+								if(mysqli_stmt_num_rows($stmt) == 1){  
+									
+									mysqli_stmt_bind_result($stmt, $role_full);
+									
+									if(mysqli_stmt_fetch($stmt)) {
+										$_SESSION["role_full"] = $role_full;
+										echo $role_full;
+									}
+								}
+							}
+                            // Redirect auf login
+                            if ($role <>  1) {
+								header("location: nlogin.php");
+							}
+							else {
+								header("location: alogin.php");
+							}
+                        } 
+						else{
+                            // Passwort nicht korrekt!
+							$login_err = "Passwort nicht korrekt!";
+                        }
+                    }
+                } 
+				else{
+                    // Username existiert nicht
+                    $login_err = "Username existiert nicht!";
+                }
+            } 
+			else{
+                echo "Etwas ist schief gelaufen :(";
+            }
+            // Close Statement
+            mysqli_stmt_close($stmt);
+        }
+    //}
+    
+    // Close 
+    mysqli_close($link);
+}
+?>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+HOME
+home.php
+
+<?php
+require_once "style.php";
+require_once "config.php";
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<div class="content">
+    <div class="container">
+    <h1 class="my-5">Hallo,
+	<br> <br>
+	<br> Was möchten Sie tun?</h1>
+    <p>
+		<br>
+		<a href="login.php" class="button">User Login</a>
+		<br>
+    </p>
+    </div>
+</div>
+</body>
+</html>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+NLOGIN
+nlogin.php
+
+<?php
+require_once "style.php";
+require_once "config.php";
+if(isset($_SESSION["loggedin"]) === true){
+    header("location: login.php");
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<div class="content">
+    <div class="container">
+    <h1 class="my-5">Hallo,
+	<br>
+	<br> Was möchten Sie tun?</h1>
+    <p>
+		<br>
+		<h2> Normaler Login </h2>
+		<br>
+		<a href="logout.php" class="button">Abmelden</a>
+		<br>
+		<br>
+    </p>
+    </div>
+</div>
+</body>
+</html>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+ALOGIN
+alogin.php
+
+<?php
+require_once "style.php";
+require_once "config.php";
+if(isset($_SESSION["loggedin"]) === true){
+    header("location: login.php");
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<div class="content">
+    <div class="container">
+    <h1 class="my-5">Hallo,
+	<br>
+	<br> Was möchten Sie tun?</h1>
+    <p>
+		<br>
+		<h2> Admin Login </h2>
+		<br>
+		<a href="logout.php" class="button">Abmelden</a>
+		<a href="new_user.php" class="button">neuen User anlegen</a>
+		<br>
+		<br>
+    </p>
+    </div>
+</div>
+</body>
+</html>
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+NEW User
+new_user.php
+
+<?php
+//Files holen
+require_once "config.php";
+require_once "new_user_backend.php";
+require_once "style.php";
+
+?>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<head>
+    
+    <title></title>
+
+</head>
+<body>
+<div class="content">
+    <div class="container">
+        <h2>Neuer User</h2>
+        <p>Legen Sie einen User an.</p>
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+				
+				
+                <label>Username</label>
+				<br>
+				<span class="error"><?php echo $username_err; ?></span>
+				<br>
+                <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $name; ?>">
+                <br>
+				<br>
+                <label>Password</label>
+				<br>
+				<span class="error"><?php echo $password_err; ?></span>
+				<br>
+                <input type="password" name="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $password; ?>">
+				<br>
+                <span class="error"><?php echo $group_err; ?></span>
+				<br>
+					<input type="radio" id="1" class="form-control" name="group" value="1">
+					<label for="1">IT</label><br>
+					<input type="radio" id="2" class="form-control" name="group" value="2">
+					<label for="2">User</label><br>
+				<br>
+                
+            
+				<br>
+                <input type="submit" class="button" value="Submit">
+				<br>
+        </form>
+    </div> 
+</div>	
+</body>
+</html>
+
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
+NEW USER BACK
+new_user_backend.php
+
+<?php
+//Initialisierung
+$name = $password = $confirm_password = "";
+$username_err = $password_err = $confirm_password_err = "";
+$group_err = "";
+$group = "";
+//Form verarbeiten
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+
+ // === Block für den Benutzernamen ===
+ 
+    // Usernamen kontrollieren
+    if(empty(trim($_POST["username"]))){
+        $username_err = "Bitte Benutzernamen eintragen.";
+    } 
+	elseif(!preg_match('/^[a-zA-Z0-9_]+$/', trim($_POST["username"]))){
+        $username_err = "Name darf nur Zahlen und Buchstaben enthalten.";
+    } 
+	else{
+        // Select Statement
+        $sql = "SELECT id FROM t_users WHERE name = ?";
+        
+        if($stmt = mysqli_prepare($link, $sql)){
+            // Bind variables to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "s", $param_username);
+            
+            // Parameter setzen
+            $param_username = trim($_POST["username"]);
+            
+            // Versuch Statement auszuführen
+            if(mysqli_stmt_execute($stmt)){
+                /* store result */
+                mysqli_stmt_store_result($stmt);
+                
+                if(mysqli_stmt_num_rows($stmt) == 1){
+                    $username_err = "Benutzername nicht verfügbar.";
+                } 
+				else{
+                    $name = trim($_POST["username"]);
+                }
+            } 
+			else{
+                echo ":(";
+            }
+
+            // Close 
+            mysqli_stmt_close($stmt);
+        }
+    }
+// === Rolle ===
+	if (empty($_POST["group"])) {
+		$group_err = "Bitte geben Sie eine Gruppe an";
+	}
+	else {
+		$group = ($_POST["group"]);
+	}
+	
+//  === Block für das Passwort === 
+
+    //Prüfung Passwort
+    if(empty(trim($_POST["password"]))){
+        $password_err = "Bitte Passwort eingeben.";     
+    } 
+	elseif(strlen(trim($_POST["password"])) < 6){
+        $password_err = "Passwort muss 6 Zeichen haben.";
+    } 
+	else{
+        $password = trim($_POST["password"]);
+    }
+	
+    //Prüfung Eingabefehler
+	if(empty($username_err) && empty($password_err)) {
+        
+        // Prepare an insert statement
+        $sql = "INSERT INTO t_users (name, passwort, rolle) VALUES (?, ?, ?)";
+        
+        if($stmt = mysqli_prepare($link, $sql)){
+            // Bind variables to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "ssi", $param_username, $param_password, $group);
+            
+            $param_username = $name;
+			
+			// === Passwort Hash Funktion ===
+			
+			// Passwort Hash
+            $param_password = password_hash($password, PASSWORD_DEFAULT); 
+            echo "Test 2";
+            // Versuch Statement auszuführen
+            if(mysqli_stmt_execute($stmt)){
+                // Redirect to Admin page
+                header("location: alogin.php");
+            } else{
+                echo "Fehler";
+            }
+
+            // Close statement
+            mysqli_stmt_close($stmt);
+        }
+    }
+    
+    // Close connection
+    mysqli_close($link);
+}
+?>
+===========================================================================================================================================================================================================================================
+===========================================================================================================================================================================================================================================
